@@ -3,28 +3,28 @@ defmodule AppTest do
 
   # Test #1
   test "reads command-line argument, transform it with ROT-13, and writes result" do
-    run(["my input"])
+    command_line = run(["my input"])
 
-    # Output Tracking
-    assert_receive {:command_line, "zl vachg\n"}
+    # pattern: Output Tracking
+    assert command_line.last_output == "zl vachg\n"
   end
 
   # Test #2
   test "writes usage when no argument provided" do
     # patterns: Signature Shielding, Configurable Responses
-    run([])
+    command_line = run([])
 
-    # Output Tracking
-    assert_receive {:command_line, "Usage: run text_to_transform\n"}
+    # pattern: Output Tracking
+    assert command_line.last_output == "Usage: run text_to_transform\n"
   end
 
   # Test #3
   test "complains when too many command-line arguments provided" do
     # patterns: Signature Shielding, Configurable Responses
-    run(["a", "b"])
+    command_line = run(["a", "b"])
 
     # pattern: Output Tracking
-    assert_receive {:command_line, "too many arguments\n"}
+    assert command_line.last_output == "too many arguments\n"
   end
 
   # pattern: Signature Shielding
@@ -33,7 +33,7 @@ defmodule AppTest do
 
     #  command_line = CommandLine.create_null(args)
     # patterns: Nullable, Infrastructure Wrapper, Configurable Responses, Output Tracking
-    command_line = CommandLine.create_null(args)
+    command_line = CommandLine.create_null(args: args)
     #  output = CommandLine.track_output()
 
     # pattern: Signature Shielding

@@ -1,52 +1,40 @@
 defmodule CommandLine do
-  defstruct [:args, :output]
+  @moduledoc """
+  An infrastructure wrapper for a command line.
+  """
+  defstruct [:write, :argv, :last_output]
 
-  defprotocol Output do
-    @spec write(t, String.t()) :: String.t()
-    def write(value, string)
-  end
-
-  defmodule Output.Process do
-    defstruct prefix: :command_line
-
-    def new do
-      struct!(__MODULE__, [])
-    end
-
-    defimpl CommandLine.Output do
-      def write(output, string) do
-        send(self(), {output.prefix, string})
-      end
+  defmodule NullIO do
+    def write(_string) do
+      :ok
     end
   end
 
-  defmodule Output.Standard do
-    defstruct []
+  def create_null(attrs \\ []) do
+    args = Access.get(attrs, :args, [])
+    # Embedded Stub
+    write_fn = &NullIO.write/1
+    # Configurable Response
+    argv_fn = fn -> args end
 
-    def new do
-      struct!(__MODULE__, [])
-    end
-
-    defimpl CommandLine.Output do
-      def write(_output, string) do
-        IO.write(string)
-      end
-    end
+    new(write: write_fn, argv: argv_fn)
   end
 
-  def create_null(args) do
-    new(args: args, output: Output.Process.new())
-  end
-
-  def create(args) do
-    new(args: args, output: Output.Standard.new())
+  def create do
+    new(write: &IO.write/1, argv: &System.argv/0)
   end
 
   def new(attrs) do
     struct(__MODULE__, attrs)
   end
 
+  def args(command_line) do
+    command_line.argv.()
+  end
+
   def write_output(command_line, output) do
-    CommandLine.Output.write(command_line.output, output)
+    output = output <> "\n"
+    :ok = command_line.write.(output)
+    %{command_line | last_output: output}
   end
 end

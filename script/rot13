@@ -1,0 +1,6 @@
+#! /usr/bin/env elixir
+
+Mix.install([{:rot13, path: "./"}])
+
+command_line = CommandLine.create()
+App.run(command_line)
