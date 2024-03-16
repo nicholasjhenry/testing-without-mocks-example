@@ -11,7 +11,7 @@ defmodule HttpServer do
   # https://github.com/erlang/otp/blob/master/lib/inets/include/httpd.hrl
   Record.defrecord(:httpd, Record.extract(:mod, from_lib: "inets/include/httpd.hrl"))
 
-  defstruct [:httpd]
+  defstruct [:httpd, :internet_services]
 
   def s do
     schema(%__MODULE__{
@@ -19,13 +19,23 @@ defmodule HttpServer do
     })
   end
 
-  def create do
-    attrs = %{}
-    new(attrs)
+  defmodule NullInets do
+    def start(:httpd, _port) do
+      pid = :c.pid(0, 250, 0)
+      {:ok, pid}
+    end
+
+    def stop(:httpd, _pid) do
+      :ok
+    end
   end
 
-  def new(attrs) do
-    struct!(__MODULE__, attrs)
+  def create_null do
+    struct!(__MODULE__, %{internet_services: NullInets})
+  end
+
+  def create do
+    struct!(__MODULE__, %{internet_services: :inets})
   end
 
   def port, do: spec(is_integer() and (&(&1 in 4000..5000)))
@@ -41,15 +51,19 @@ defmodule HttpServer do
       {:modules, [__MODULE__]}
     ]
 
-    with {:ok, httpd} <- :inets.start(:httpd, server_opts) do
+    with {:ok, httpd} <- http_server.internet_services.start(:httpd, server_opts) do
       http_server = %{http_server | httpd: httpd}
       {:ok, http_server}
     end
   end
 
+  def started?(http_server) do
+    not is_nil(http_server.httpd)
+  end
+
   def stop(http_server) do
     with :ok <- verify_running(http_server),
-         :ok <- :inets.stop(:httpd, http_server.httpd) do
+         :ok <- http_server.internet_services.stop(:httpd, http_server.httpd) do
       http_server = %{http_server | httpd: nil}
       {:ok, http_server}
     end
