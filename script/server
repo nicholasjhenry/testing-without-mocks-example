@@ -1,6 +1,10 @@
 #! /usr/bin/env elixir
 
-Mix.install([{:rot13, path: "./"}])
+Mix.install([
+  {:rot13, path: "./"},
+  {:norm, "~> 0.13.0"}
+  ]
+  )
 
 command_line = CommandLine.create()
 server = Server.create(command_line: command_line)

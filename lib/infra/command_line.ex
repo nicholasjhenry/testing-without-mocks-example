@@ -2,7 +2,7 @@ defmodule CommandLine do
   @moduledoc """
   An infrastructure wrapper for a command line.
   """
-  defstruct [:write, :argv, :last_output]
+  defstruct [:write, :argv, :last_output, :args]
 
   defmodule NullIO do
     def write(_string) do
@@ -17,7 +17,7 @@ defmodule CommandLine do
     # Configurable Response
     argv_fn = fn -> args end
 
-    new(write: write_fn, argv: argv_fn)
+    new(write: write_fn, argv: argv_fn, args: args)
   end
 
   def create do
