@@ -36,6 +36,10 @@ defmodule Server do
     end
   end
 
-  def handle_request("/"), do: {200, "text/plain", "I am healthy!\n"}
-  def handle_request(_), do: {404, "text/plain", "Not found\n"}
+  require Logger
+
+  def handle_request(path) do
+    Logger.info("Request received: #{path}")
+    {501, "text/plain", "Not yet implemented\n"}
+  end
 end
