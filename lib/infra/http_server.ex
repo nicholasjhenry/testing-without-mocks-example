@@ -3,13 +3,9 @@ defmodule HttpServer do
   https://tylerpachal.medium.com/creating-an-http-server-using-pure-otp-c600fb41c972
   """
   use Norm
+  use RequestHandler
 
   require Logger
-  require Record
-
-  # Wrap the Erlang Record to make the request_uri parameter easier to access
-  # https://github.com/erlang/otp/blob/master/lib/inets/include/httpd.hrl
-  Record.defrecord(:httpd, Record.extract(:mod, from_lib: "inets/include/httpd.hrl"))
 
   defstruct [:httpd, :internet_services]
 
@@ -40,15 +36,15 @@ defmodule HttpServer do
 
   def port, do: spec(is_integer() and (&(&1 in 4000..5000)))
 
-  @contract start(s(), port()) ::
+  @contract start(s(), port(), spec(is_atom())) ::
               one_of([{:ok, s()}, {:error, {:already_started, spec(is_pid())}}])
-  def start(http_server, port) do
+  def start(http_server, port, request_handler \\ __MODULE__) do
     server_opts = [
       {:port, port},
       {:server_name, ~c(httpd_test)},
       {:server_root, ~c(/tmp)},
       {:document_root, ~c(/tmp)},
-      {:modules, [__MODULE__]}
+      {:modules, [request_handler]}
     ]
 
     with {:ok, httpd} <- http_server.internet_services.start(:httpd, server_opts) do
@@ -74,18 +70,5 @@ defmodule HttpServer do
       nil -> {:error, :not_running}
       _pid -> :ok
     end
-  end
-
-  def unquote(:do)(record) do
-    response =
-      case httpd(record, :request_uri) do
-        ~c"/" ->
-          {200, ~c"I am healthy"}
-
-        _ ->
-          {404, ~c"Not found"}
-      end
-
-    {:proceed, [response: response]}
   end
 end

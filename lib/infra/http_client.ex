@@ -8,17 +8,14 @@ defmodule HttpClient do
     case result do
       {:ok, payload} ->
         {
-          {~c"HTTP/1.1", status, msg},
-          [
-            {~c"date", _date},
-            {~c"server", _server},
-            {~c"content-length", _content_length},
-            {~c"content-type", _content_type}
-          ],
+          {~c"HTTP/1.1", status, _msg},
+          headers,
           body
         } = payload
 
-        response = %{status: status, msg: msg, body: to_string(body)}
+        headers = Enum.map(headers, fn {key, value} -> {to_string(key), to_string(value)} end)
+
+        response = %{status: status, headers: headers, body: to_string(body)}
         {:ok, response}
 
       other_result ->

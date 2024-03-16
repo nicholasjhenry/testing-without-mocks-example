@@ -51,6 +51,63 @@ defmodule Rot13.Infra.HttpServerTest do
     assert {:error, :no_such_service} = HttpServer.stop(http_server)
   end
 
+  describe "requests and responses" do
+    defmodule TestRequestHandler do
+      use RequestHandler
+
+      def handle_request("/exception") do
+        raise "Foo"
+      end
+
+      def handle_request("/invalid") do
+        "foo"
+      end
+
+      def handle_request(_path) do
+        {200, "text/plain", "Hello World"}
+      end
+    end
+
+    test "runs a call callback when a request is received and serves the response" do
+      http_server = HttpServer.create()
+      {:ok, http_server} = HttpServer.start(http_server, @port, TestRequestHandler)
+
+      result = HttpClient.get("http://localhost:#{@port}")
+
+      {:ok, _http_server} = HttpServer.stop(http_server)
+
+      assert {:ok, response} = result
+      assert response.status == 200
+      assert response.body == "Hello World"
+    end
+
+    test "fails gracefully when request handler throws exception" do
+      http_server = HttpServer.create()
+      {:ok, http_server} = HttpServer.start(http_server, @port, TestRequestHandler)
+
+      result = HttpClient.get("http://localhost:#{@port}/exception")
+
+      {:ok, _http_server} = HttpServer.stop(http_server)
+
+      assert {:ok, response} = result
+      assert response.status == 500
+      assert response.body =~ "Internal Server Error"
+    end
+
+    test "fails gracefully when return in correct response" do
+      http_server = HttpServer.create()
+      {:ok, http_server} = HttpServer.start(http_server, @port, TestRequestHandler)
+
+      result = HttpClient.get("http://localhost:#{@port}/invalid")
+
+      {:ok, _http_server} = HttpServer.stop(http_server)
+
+      assert {:ok, response} = result
+      assert response.status == 500
+      assert response.body =~ "Internal Server Error"
+    end
+  end
+
   describe "nullability" do
     test "doesn't actually start or stop the server" do
       http_server = HttpServer.create_null()

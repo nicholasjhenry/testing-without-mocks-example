@@ -1,4 +1,6 @@
 defmodule Server do
+  use RequestHandler
+
   defstruct [:command_line, :http_server]
 
   def create(attrs) do
@@ -19,7 +21,7 @@ defmodule Server do
       [port_as_string] ->
         port = String.to_integer(port_as_string)
 
-        {:ok, http_server} = HttpServer.start(server.http_server, port)
+        {:ok, http_server} = HttpServer.start(server.http_server, port, __MODULE__)
 
         command_line =
           CommandLine.write_output(server.command_line, "Server started on port #{port}")
@@ -33,4 +35,7 @@ defmodule Server do
         {:error, server}
     end
   end
+
+  def handle_request("/"), do: {200, "text/plain", "I am healthy!\n"}
+  def handle_request(_), do: {404, "text/plain", "Not found\n"}
 end
