@@ -1,0 +1,8 @@
+#! /usr/bin/env elixir
+
+Mix.install([{:rot13, path: "./"}])
+
+command_line = CommandLine.create()
+server = Server.create(command_line: command_line)
+Server.run(server)
+Process.sleep(:infinity)
