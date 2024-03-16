@@ -94,6 +94,24 @@ defmodule Rot13.Infra.HttpServerTest do
       assert response.body =~ "Internal Server Error"
     end
 
+    test "simulates requests" do
+      http_server = HttpServer.create_null()
+      {:ok, http_server} = HttpServer.start(http_server, @port, TestRequestHandler)
+      result = HttpServer.simulate_request(http_server)
+
+      assert {:ok, response} = result
+      assert response.status == 200
+      assert response.body =~ "Hello World"
+    end
+
+    test "returns an error when simulates requests if server is not started" do
+      http_server = HttpServer.create_null()
+
+      result = HttpServer.simulate_request(http_server)
+
+      assert result == {:error, :server_not_started}
+    end
+
     test "fails gracefully when return in correct response" do
       http_server = HttpServer.create()
       {:ok, http_server} = HttpServer.start(http_server, @port, TestRequestHandler)

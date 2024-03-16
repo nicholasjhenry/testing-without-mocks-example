@@ -7,7 +7,7 @@ defmodule HttpServer do
 
   require Logger
 
-  defstruct [:httpd, :internet_services]
+  defstruct [:httpd, :internet_services, :request_handler]
 
   def s do
     schema(%__MODULE__{
@@ -48,7 +48,7 @@ defmodule HttpServer do
     ]
 
     with {:ok, httpd} <- http_server.internet_services.start(:httpd, server_opts) do
-      http_server = %{http_server | httpd: httpd}
+      http_server = %{http_server | httpd: httpd, request_handler: request_handler}
       {:ok, http_server}
     end
   end
@@ -69,6 +69,42 @@ defmodule HttpServer do
     case http_server.httpd do
       nil -> {:error, :not_running}
       _pid -> :ok
+    end
+  end
+
+  def simulate_request(http_server) do
+    case http_server.httpd do
+      httpd when is_pid(httpd) ->
+        port = nil
+
+        request_record =
+          {:mod, {:init_data, {57743, ~c"127.0.0.1"}, {4002, ~c"127.0.0.1"}, ~c"Auckland"}, [],
+           :ip_comm, port, :httpd_conf_4002default, ~c"GET", ~c"localhost:4002/", ~c"/",
+           ~c"HTTP/1.1", ~c"GET / HTTP/1.1",
+           [
+             {~c"connection", ~c"keep-alive"},
+             {~c"host", ~c"localhost:4002"},
+             {~c"te", []},
+             {~c"content-length", ~c"0"}
+           ], [], true}
+
+        result = http_server.request_handler.do(request_record)
+
+        {:proceed, [response: response]} = result
+        {:response, headers, body} = response
+        {status, headers} = Keyword.pop(headers, :code)
+        headers = Enum.map(headers, fn {key, value} -> {key, to_string(value)} end)
+
+        response = %{
+          status: status,
+          headers: headers,
+          body: to_string(body)
+        }
+
+        {:ok, response}
+
+      _no_pid ->
+        {:error, :server_not_started}
     end
   end
 end
