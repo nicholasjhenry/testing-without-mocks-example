@@ -11,18 +11,32 @@ defmodule RequestHandler do
 
       def unquote(:do)(record), do: handle_do(record, &handle_request/1)
 
-      def handle_request("/"), do: {200, "text/plain", "I am healthy\n"}
-      def handle_request(_), do: {404, "text/plain", "Not found\n"}
+      def handle_request(%{url: "/"}), do: {200, "text/plain", "I am healthy\n"}
+      def handle_request(_request), do: {404, "text/plain", "Not found\n"}
 
       defoverridable handle_request: 1
     end
   end
 
   def handle_do(record, handle_request) do
-    response =
+    body = record |> httpd(:entity_body) |> to_string
+    url = record |> httpd(:request_uri) |> to_string
+    method = record |> httpd(:method) |> to_string
+
+    headers =
       record
-      |> httpd(:request_uri)
-      |> to_string
+      |> httpd(:parsed_header)
+      |> Enum.map(fn {key, value} -> {to_string(key), to_string(value)} end)
+
+    request = %{
+      url: url,
+      method: method,
+      headers: headers,
+      body: body
+    }
+
+    response =
+      request
       |> handle_request.()
       |> format_response
 

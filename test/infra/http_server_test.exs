@@ -55,15 +55,15 @@ defmodule Rot13.Infra.HttpServerTest do
     defmodule TestRequestHandler do
       use RequestHandler
 
-      def handle_request("/exception") do
+      def handle_request(%{url: "/exception"}) do
         raise "Foo"
       end
 
-      def handle_request("/invalid") do
+      def handle_request(%{url: "/invalid"}) do
         "foo"
       end
 
-      def handle_request(_path) do
+      def handle_request(_request) do
         {200, "text/plain", "Hello World"}
       end
     end
@@ -72,7 +72,8 @@ defmodule Rot13.Infra.HttpServerTest do
       http_server = HttpServer.create()
       {:ok, http_server} = HttpServer.start(http_server, @port, TestRequestHandler)
 
-      result = HttpClient.get("http://localhost:#{@port}")
+      # result = HttpClient.get("http://localhost:#{@port}")
+      result = HttpClient.post("http://localhost:#{@port}", "foo", [~c"application/json"])
 
       {:ok, _http_server} = HttpServer.stop(http_server)
 

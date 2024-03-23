@@ -1,10 +1,18 @@
 defmodule HttpClient do
-  def get(url) do
-    headers = []
-
+  def get(url, headers \\ []) do
+    headers = Enum.map(headers, fn {key, value} -> {to_charlist(key), to_charlist(value)} end)
     http_request_opts = []
     result = :httpc.request(:get, {url, headers}, http_request_opts, [])
+    handle_response_result(result)
+  end
 
+  def post(url, body, content_type, headers \\ []) do
+    http_request_opts = []
+    result = :httpc.request(:post, {url, headers, content_type, body}, http_request_opts, [])
+    handle_response_result(result)
+  end
+
+  defp handle_response_result(result) do
     case result do
       {:ok, payload} ->
         {

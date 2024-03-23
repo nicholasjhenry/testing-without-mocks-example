@@ -23,14 +23,15 @@ defmodule Server do
 
         {:ok, http_server} = HttpServer.start(server.http_server, port, __MODULE__)
 
-        command_line =
-          CommandLine.write_output(server.command_line, "Server started on port #{port}")
+        output = "Server started on port #{port}"
+        command_line = CommandLine.write_output(server.command_line, output)
 
         server = %{server | http_server: http_server, command_line: command_line}
         {:ok, server}
 
       _other_args ->
-        command_line = CommandLine.write_output(server.command_line, "Usage: run PORT")
+        output = "Usage: run PORT"
+        command_line = CommandLine.write_output(server.command_line, output)
         server = %{server | command_line: command_line}
         {:error, server}
     end
@@ -38,8 +39,9 @@ defmodule Server do
 
   require Logger
 
-  def handle_request(path) do
-    Logger.info("Request received: #{path}")
+  def handle_request(request) do
+    dbg(request)
+    Logger.info("Request received: #{request.url}")
     {501, "text/plain", "Not yet implemented\n"}
   end
 end
