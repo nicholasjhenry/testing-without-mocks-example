@@ -1,5 +1,8 @@
-defmodule AppTest do
+defmodule Switch.Util.CommandTest do
   use ExUnit.Case, async: true
+
+  alias Switch.Infra.CommandLine
+  alias Switch.Util.Command
 
   # Test #1
   test "reads command-line argument, transform it with ROT-13, and writes result" do
@@ -37,6 +40,6 @@ defmodule AppTest do
     #  output = CommandLine.track_output()
 
     # pattern: Signature Shielding
-    App.run(command_line)
+    Command.run(command_line)
   end
 end

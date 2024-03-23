@@ -1,7 +1,9 @@
-defmodule RequestHandler do
+defmodule Switch.Infra.RequestHandler do
   defmacro __using__(_opts) do
     quote do
-      import RequestHandler
+      alias Switch.Infra.HttpResponse
+
+      import Switch.Infra.RequestHandler
 
       def unquote(:do)(record) do
         handle_do(record, &handle_request/1)
@@ -26,6 +28,9 @@ defmodule RequestHandler do
       defoverridable handle_request: 1
     end
   end
+
+  alias Switch.Infra.HttpRequest
+  alias Switch.Infra.HttpResponse
 
   def handle_do(record, handle_request) do
     record

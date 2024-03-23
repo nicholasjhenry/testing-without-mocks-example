@@ -1,4 +1,4 @@
-defmodule HttpClient do
+defmodule Switch.Infra.HttpClient do
   def get(url, headers \\ []) do
     headers = Enum.map(headers, fn {key, value} -> {to_charlist(key), to_charlist(value)} end)
     http_request_opts = []

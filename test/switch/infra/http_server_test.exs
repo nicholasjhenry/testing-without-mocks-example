@@ -1,5 +1,9 @@
-defmodule Rot13.Infra.HttpServerTest do
+defmodule Switch.Infra.HttpServerTest do
   use ExUnit.Case, async: true
+
+  alias Switch.Infra.HttpRequest
+  alias Switch.Infra.HttpServer
+  alias Switch.Infra.HttpClient
 
   # Bevhaviour Simulation
 
@@ -53,7 +57,7 @@ defmodule Rot13.Infra.HttpServerTest do
 
   describe "requests and responses" do
     defmodule TestRequestHandler do
-      use RequestHandler
+      use Switch.Infra.RequestHandler
 
       def handle_request(%{request_uri: "/exception"}) do
         raise "Foo"

@@ -1,6 +1,9 @@
 #! /usr/bin/env elixir
 
-Mix.install([{:rot13, path: "./"}])
+Mix.install([{:switch, path: "./"}])
+
+alias Switch.Infra.CommandLine
+alias Switch.Util.Command
 
 command_line = CommandLine.create()
-App.run(command_line)
+Command.run(command_line)

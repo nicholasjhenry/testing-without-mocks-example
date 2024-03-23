@@ -1,4 +1,4 @@
-defmodule CommandLine do
+defmodule Switch.Infra.CommandLine do
   @moduledoc """
   An infrastructure wrapper for a command line.
   """

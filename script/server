@@ -1,12 +1,13 @@
 #! /usr/bin/env elixir
 
 Mix.install([
-  {:rot13, path: "./"},
+  {:switch, path: "./"},
   {:norm, "~> 0.13.0"}
-  ]
-  )
+])
+
+alias Switch.Infra.CommandLine
+alias Switch.Util.Server
 
 command_line = CommandLine.create()
-server = Server.create(command_line: command_line)
-Server.run(server)
+Server.create(command_line: command_line) |> Server.run()
 Process.sleep(:infinity)

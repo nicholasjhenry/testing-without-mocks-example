@@ -1,5 +1,7 @@
-defmodule Rot13.Infra.CommandLineTest do
+defmodule Switch.Infra.CommandLineTest do
   use ExUnit.Case, async: true
+
+  alias Switch.Infra.CommandLine
 
   import ExUnit.CaptureIO
 

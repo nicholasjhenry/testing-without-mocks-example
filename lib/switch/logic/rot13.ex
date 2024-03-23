@@ -1,4 +1,4 @@
-defmodule Rot13 do
+defmodule Switch.Logic.Rot13 do
   def transform(input) do
     String.replace(input, ~r/[A-Za-z]/, &transform_letter/1)
   end

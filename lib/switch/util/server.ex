@@ -1,5 +1,9 @@
-defmodule Server do
-  use RequestHandler
+defmodule Switch.Util.Server do
+  use Switch.Infra.RequestHandler
+
+  alias Switch.Infra.CommandLine
+  alias Switch.Infra.HttpServer
+  alias Switch.Logic.Rot13
 
   defstruct [:command_line, :http_server]
 

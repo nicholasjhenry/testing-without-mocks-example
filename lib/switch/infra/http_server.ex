@@ -1,9 +1,11 @@
-defmodule HttpServer do
+defmodule Switch.Infra.HttpServer do
   @moduledoc """
   https://tylerpachal.medium.com/creating-an-http-server-using-pure-otp-c600fb41c972
   """
   use Norm
-  use RequestHandler
+  use Switch.Infra.RequestHandler
+
+  alias Switch.Infra.HttpRequest
 
   require Logger
 

@@ -1,4 +1,4 @@
-defmodule HttpResponse do
+defmodule Switch.Infra.HttpResponse do
   defstruct [:status, :headers, :body]
 
   def create(attrs) do

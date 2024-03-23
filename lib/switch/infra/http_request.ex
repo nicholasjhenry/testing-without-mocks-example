@@ -1,4 +1,4 @@
-defmodule HttpRequest do
+defmodule Switch.Infra.HttpRequest do
   require Record
 
   # Wrap the Erlang Record to make the request_uri parameter easier to access
