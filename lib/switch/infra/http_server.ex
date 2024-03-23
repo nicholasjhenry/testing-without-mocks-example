@@ -2,7 +2,6 @@ defmodule Switch.Infra.HttpServer do
   @moduledoc """
   https://tylerpachal.medium.com/creating-an-http-server-using-pure-otp-c600fb41c972
   """
-  use Norm
   use Switch.Infra.RequestHandler
 
   alias Switch.Infra.HttpRequest
@@ -10,12 +9,6 @@ defmodule Switch.Infra.HttpServer do
   require Logger
 
   defstruct [:httpd, :internet_services, :request_handler]
-
-  def s do
-    schema(%__MODULE__{
-      httpd: spec(is_pid() or is_nil())
-    })
-  end
 
   defmodule NullInets do
     def start(:httpd, _port) do
@@ -36,10 +29,6 @@ defmodule Switch.Infra.HttpServer do
     struct!(__MODULE__, %{internet_services: :inets})
   end
 
-  def port, do: spec(is_integer() and (&(&1 in 4000..5000)))
-
-  @contract start(s(), port(), spec(is_atom())) ::
-              one_of([{:ok, s()}, {:error, {:already_started, spec(is_pid())}}])
   def start(http_server, port, request_handler \\ __MODULE__) do
     server_opts = [
       {:port, port},

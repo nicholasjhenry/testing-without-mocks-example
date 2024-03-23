@@ -20,8 +20,6 @@ defmodule Switch.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    [
-      {:norm, "~> 0.13.0"}
-    ]
+    []
   end
 end
