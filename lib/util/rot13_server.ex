@@ -40,8 +40,12 @@ defmodule Server do
   require Logger
 
   def handle_request(request) do
-    dbg(request)
-    Logger.info("Request received: #{request.url}")
-    {501, "text/plain", "Not yet implemented\n"}
+    Logger.info("Request received: #{request.request_uri}")
+
+    HttpResponse.create(
+      status: 200,
+      headers: [content_type: "text/plain"],
+      body: Rot13.transform(request.entity_body)
+    )
   end
 end

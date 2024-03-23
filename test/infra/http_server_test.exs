@@ -55,16 +55,20 @@ defmodule Rot13.Infra.HttpServerTest do
     defmodule TestRequestHandler do
       use RequestHandler
 
-      def handle_request(%{url: "/exception"}) do
+      def handle_request(%{request_uri: "/exception"}) do
         raise "Foo"
       end
 
-      def handle_request(%{url: "/invalid"}) do
+      def handle_request(%{request_uri: "/invalid"}) do
         "foo"
       end
 
-      def handle_request(_request) do
-        {200, "text/plain", "Hello World"}
+      def handle_request(%{request_uri: "/"}) do
+        HttpResponse.create(
+          status: 200,
+          headers: [content_type: "text/plain"],
+          body: "Hello World"
+        )
       end
     end
 
@@ -98,7 +102,8 @@ defmodule Rot13.Infra.HttpServerTest do
     test "simulates requests" do
       http_server = HttpServer.create_null()
       {:ok, http_server} = HttpServer.start(http_server, @port, TestRequestHandler)
-      result = HttpServer.simulate_request(http_server)
+      http_request = HttpRequest.create_null()
+      result = HttpServer.simulate_request(http_server, http_request)
 
       assert {:ok, response} = result
       assert response.status == 200
@@ -108,7 +113,8 @@ defmodule Rot13.Infra.HttpServerTest do
     test "returns an error when simulates requests if server is not started" do
       http_server = HttpServer.create_null()
 
-      result = HttpServer.simulate_request(http_server)
+      http_request = HttpRequest.create_null()
+      result = HttpServer.simulate_request(http_server, http_request)
 
       assert result == {:error, :server_not_started}
     end

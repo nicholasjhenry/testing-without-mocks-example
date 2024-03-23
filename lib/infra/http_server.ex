@@ -72,34 +72,14 @@ defmodule HttpServer do
     end
   end
 
-  def simulate_request(http_server) do
+  def simulate_request(http_server, http_request) do
     case http_server.httpd do
       httpd when is_pid(httpd) ->
-        port = nil
-
-        request_record =
-          {:mod, {:init_data, {57743, ~c"127.0.0.1"}, {4002, ~c"127.0.0.1"}, ~c"Auckland"}, [],
-           :ip_comm, port, :httpd_conf_4002default, ~c"GET", ~c"localhost:4002/", ~c"/",
-           ~c"HTTP/1.1", ~c"GET / HTTP/1.1",
-           [
-             {~c"connection", ~c"keep-alive"},
-             {~c"host", ~c"localhost:4002"},
-             {~c"te", []},
-             {~c"content-length", ~c"0"}
-           ], [], true}
-
-        result = http_server.request_handler.do(request_record)
-
-        {:proceed, [response: response]} = result
-        {:response, headers, body} = response
-        {status, headers} = Keyword.pop(headers, :code)
-        headers = Enum.map(headers, fn {key, value} -> {key, to_string(value)} end)
-
-        response = %{
-          status: status,
-          headers: headers,
-          body: to_string(body)
-        }
+        response =
+          http_request
+          |> HttpRequest.to_record()
+          |> http_server.request_handler.do()
+          |> HttpResponse.from_record()
 
         {:ok, response}
 

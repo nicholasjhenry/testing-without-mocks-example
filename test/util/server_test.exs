@@ -12,17 +12,18 @@ defmodule Rot13.ServerTest do
     end
 
     @tag :capture_log
-    test "responds to request with a placeholder" do
+    test "responds to request with a transformation" do
       command_line = CommandLine.create_null(args: ["4001"])
       http_server = HttpServer.create_null()
+      http_request = HttpRequest.create_null(entity_body: "hello")
       server = Server.create(command_line: command_line, http_server: http_server)
       {:ok, server} = Server.run(server)
 
-      result = HttpServer.simulate_request(server.http_server)
+      result = HttpServer.simulate_request(server.http_server, http_request)
 
       assert {:ok, response} = result
-      assert response.status == 501
-      assert response.body == "Not yet implemented\n"
+      assert response.status == 200
+      assert response.body == Rot13.transform("hello")
     end
 
     test "validates args" do
