@@ -34,15 +34,17 @@ defmodule Switch.Infra.HttpRequest do
 
   @spec from_record(tuple()) :: t()
   def from_record(record) do
+    absolute_uri = record |> httpd(:absolute_uri) |> to_string
+    http_version = record |> httpd(:http_version) |> to_string
     entity_body = record |> httpd(:entity_body) |> to_string
     request_uri = record |> httpd(:request_uri) |> to_string
     method = record |> httpd(:method) |> to_string
     headers = headers(record)
 
     http_request_attrs = %{
-      http_version: "HTTP/1.1",
+      http_version: http_version,
       method: method,
-      absolute_uri: "???",
+      absolute_uri: absolute_uri,
       request_uri: request_uri,
       headers: headers,
       entity_body: entity_body
