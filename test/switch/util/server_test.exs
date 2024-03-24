@@ -26,7 +26,8 @@ defmodule Switch.Util.ServerTest do
       HttpRequest.create_null(
         request_uri: @valid_request_uri,
         method: "POST",
-        entity_body: :json.encode(%{text: "hello"})
+        entity_body: :json.encode(%{text: "hello"}),
+        headers: [{"content-type", "application/json"}]
       )
 
     server = Server.create(command_line: command_line, http_server: http_server)
@@ -83,6 +84,52 @@ defmodule Switch.Util.ServerTest do
     assert response.status == 405
     assert response.headers[:content_type] == "application/json"
     assert json_response(response) == %{"error" => "method not allowed"}
+  end
+
+  test "given an invalid JSON payload responds with an invalid content error" do
+    command_line = CommandLine.create_null(args: ["4001"])
+    http_server = HttpServer.create_null()
+
+    http_request =
+      HttpRequest.create_null(
+        request_uri: @valid_request_uri,
+        method: "POST",
+        entity_body: :json.encode(%{invalid: "hello"}),
+        headers: [{"content-type", "application/json"}]
+      )
+
+    server = Server.create(command_line: command_line, http_server: http_server)
+    {:ok, server} = Server.run(server)
+
+    result = HttpServer.simulate_request(server.http_server, http_request)
+
+    assert {:ok, response} = result
+    assert response.status == 400
+    assert response.headers[:content_type] == "application/json"
+    assert json_response(response) == %{"error" => "Incorrect payload: must have 'text' key"}
+  end
+
+  test "given an invalid content-type responds with an invalid content-type error" do
+    command_line = CommandLine.create_null(args: ["4001"])
+    http_server = HttpServer.create_null()
+
+    http_request =
+      HttpRequest.create_null(
+        request_uri: @valid_request_uri,
+        method: "POST",
+        entity_body: :json.encode(%{text: "hello"}),
+        headers: [{"content-type", "plain/text"}]
+      )
+
+    server = Server.create(command_line: command_line, http_server: http_server)
+    {:ok, server} = Server.run(server)
+
+    result = HttpServer.simulate_request(server.http_server, http_request)
+
+    assert {:ok, response} = result
+    assert response.status == 400
+    assert response.headers[:content_type] == "application/json"
+    assert json_response(response) == %{"error" => "Must be application/json"}
   end
 
   test "validates args" do
