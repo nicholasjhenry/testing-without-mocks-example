@@ -60,7 +60,29 @@ defmodule Switch.Util.ServerTest do
     assert {:ok, response} = result
     assert response.status == 404
     assert response.headers[:content_type] == "application/json"
-    assert json_response(response) == %{"error" => "not-found"}
+    assert json_response(response) == %{"error" => "not found"}
+  end
+
+  test "given an invalid method responds with a method-not-allowed error" do
+    command_line = CommandLine.create_null(args: ["4001"])
+    http_server = HttpServer.create_null()
+
+    http_request =
+      HttpRequest.create_null(
+        request_uri: @valid_request_uri,
+        method: "GET",
+        entity_body: :json.encode(%{text: "hello"})
+      )
+
+    server = Server.create(command_line: command_line, http_server: http_server)
+    {:ok, server} = Server.run(server)
+
+    result = HttpServer.simulate_request(server.http_server, http_request)
+
+    assert {:ok, response} = result
+    assert response.status == 405
+    assert response.headers[:content_type] == "application/json"
+    assert json_response(response) == %{"error" => "method not allowed"}
   end
 
   test "validates args" do

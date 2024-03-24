@@ -54,19 +54,27 @@ defmodule Switch.Util.Server do
   require Logger
 
   @spec handle_request(HttpRequest.t()) :: HttpResponse.t()
-  def handle_request(%{request_uri: "/rot13/transform"} = request) do
+  def handle_request(request) do
     Logger.info("Request received: #{request.request_uri}")
 
-    %{"text" => text} = request.entity_body |> :json.decode()
-
-    json_response(200, %{transform: Rot13.transform(text)})
+    with :ok <- validate(request, :request_uri),
+         :ok <- validate(request, :method) do
+      %{"text" => text} = request.entity_body |> :json.decode()
+      json_response(200, %{transform: Rot13.transform(text)})
+    else
+      {:error, error_response} -> error_response
+    end
   end
 
-  def handle_request(%{request_uri: _unknown} = request) do
-    Logger.info("Request received: #{request.request_uri}")
+  def validate(%{request_uri: "/rot13/transform"}, :request_uri), do: :ok
 
-    json_response(404, %{"error" => "not-found"})
-  end
+  def validate(_request, :request_uri),
+    do: {:error, json_response(404, %{"error" => "not found"})}
+
+  def validate(%{method: "POST"}, :method), do: :ok
+
+  def validate(_request, :method),
+    do: {:error, json_response(405, %{"error" => "method not allowed"})}
 
   defp json_response(status, data) do
     body =
