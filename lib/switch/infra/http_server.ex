@@ -5,10 +5,13 @@ defmodule Switch.Infra.HttpServer do
   use Switch.Infra.RequestHandler
 
   alias Switch.Infra.HttpRequest
+  alias Switch.Infra.HttpResponse
 
   require Logger
 
   defstruct [:httpd, :internet_services, :request_handler]
+
+  @type t :: %__MODULE__{}
 
   defmodule NullInets do
     def start(:httpd, _port) do
@@ -21,14 +24,17 @@ defmodule Switch.Infra.HttpServer do
     end
   end
 
+  @spec create_null() :: t()
   def create_null do
     struct!(__MODULE__, %{internet_services: NullInets})
   end
 
+  @spec create() :: t()
   def create do
     struct!(__MODULE__, %{internet_services: :inets})
   end
 
+  @spec start(t(), integer(), module()) :: {:ok, t()} | {:error, term()}
   def start(http_server, port, request_handler \\ __MODULE__) do
     server_opts = [
       {:port, port},
@@ -44,10 +50,12 @@ defmodule Switch.Infra.HttpServer do
     end
   end
 
+  @spec started?(t()) :: boolean()
   def started?(http_server) do
     not is_nil(http_server.httpd)
   end
 
+  @spec stop(t()) :: {:ok, t()} | {:error, term()}
   def stop(http_server) do
     with :ok <- verify_running(http_server),
          :ok <- http_server.internet_services.stop(:httpd, http_server.httpd) do
@@ -63,6 +71,7 @@ defmodule Switch.Infra.HttpServer do
     end
   end
 
+  @spec simulate_request(t(), HttpRequest.t()) :: {:ok, HttpResponse.t()} | {:error, term()}
   def simulate_request(http_server, http_request) do
     case http_server.httpd do
       httpd when is_pid(httpd) ->

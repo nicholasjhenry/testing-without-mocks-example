@@ -6,7 +6,7 @@ defmodule Switch.Infra.RequestHandler do
       import Switch.Infra.RequestHandler
 
       def unquote(:do)(record) do
-        handle_do(record, &handle_request/1)
+        perform(record, &handle_request/1)
       end
 
       def handle_request(%{request_uri: "/"}) do
@@ -32,7 +32,8 @@ defmodule Switch.Infra.RequestHandler do
   alias Switch.Infra.HttpRequest
   alias Switch.Infra.HttpResponse
 
-  def handle_do(record, handle_request) do
+  @spec perform(tuple(), (HttpRequest.t() -> HttpResponse.t())) :: tuple()
+  def perform(record, handle_request) do
     record
     |> HttpRequest.from_record()
     |> handle_request.()

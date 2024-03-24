@@ -1,12 +1,18 @@
 defmodule Switch.Util.Server do
   use Switch.Infra.RequestHandler
 
+  alias Switch.Attrs
   alias Switch.Infra.CommandLine
+  alias Switch.Infra.HttpRequest
+  alias Switch.Infra.HttpResponse
   alias Switch.Infra.HttpServer
   alias Switch.Logic.Rot13
 
   defstruct [:command_line, :http_server]
 
+  @type t :: %__MODULE__{}
+
+  @spec create(Attrs.t()) :: t()
   def create(attrs) do
     default_attrs = %{
       http_server: HttpServer.create(),
@@ -18,6 +24,7 @@ defmodule Switch.Util.Server do
     struct!(__MODULE__, attrs)
   end
 
+  @spec run(t()) :: {:ok, t()} | {:error, t()}
   def run(server) do
     args = CommandLine.args(server.command_line)
 
@@ -43,6 +50,7 @@ defmodule Switch.Util.Server do
 
   require Logger
 
+  @spec handle_request(HttpRequest.t()) :: HttpResponse.t()
   def handle_request(request) do
     Logger.info("Request received: #{request.request_uri}")
 

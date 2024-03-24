@@ -2,6 +2,7 @@ defmodule Switch.Util.Command do
   alias Switch.Infra.CommandLine
   alias Switch.Logic.Rot13
 
+  @spec run(CommandLine.t()) :: CommandLine.t()
   def run(command_line) do
     with [input] <- CommandLine.args(command_line) do
       result = Rot13.transform(input)

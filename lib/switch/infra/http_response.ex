@@ -1,10 +1,16 @@
 defmodule Switch.Infra.HttpResponse do
   defstruct [:status, :headers, :body]
 
+  @type t :: %__MODULE__{}
+
+  alias Switch.Attrs
+
+  @spec create(Attrs.t()) :: t()
   def create(attrs) do
     struct!(__MODULE__, attrs)
   end
 
+  @spec to_record(t()) :: tuple()
   def to_record(response) do
     content_length = String.length(response.body)
     content_type = Keyword.fetch!(response.headers, :content_type)
@@ -20,6 +26,7 @@ defmodule Switch.Infra.HttpResponse do
     {:proceed, [response: response_record]}
   end
 
+  @spec from_record(tuple()) :: t()
   def from_record(record) do
     {:proceed, [response: response]} = record
     {:response, headers, body} = response
