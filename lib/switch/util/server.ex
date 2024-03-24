@@ -55,13 +55,19 @@ defmodule Switch.Util.Server do
 
   @spec handle_request(HttpRequest.t()) :: HttpResponse.t()
   def handle_request(request) do
+    route(request, fn text ->
+      %{transform: Rot13.transform(text)}
+    end)
+  end
+
+  defp route(request, fun) do
     Logger.info("Request received: #{request.request_uri}")
 
     with :ok <- validate(request, :request_uri),
          :ok <- validate(request, :method),
          :ok <- validate(request, :content_type),
          {:ok, text} <- parse_text(request) do
-      json_response(200, %{transform: Rot13.transform(text)})
+      json_response(200, fun.(text))
     else
       {:error, error_response} -> error_response
     end
