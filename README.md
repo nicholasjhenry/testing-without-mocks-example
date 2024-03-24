@@ -19,5 +19,5 @@ Server:
     script/server 4001
     # New terminal
     brew install httpie
-    http http://localhost:4001 hello=world
-    # => { "uryyb": "jbeyq" }
+    http http://localhost:4001/rot13/transform text=world
+    # => { "transform": "uryyb" }
