@@ -1,4 +1,6 @@
 defmodule Switch.Infra.HttpClient do
+  @http_version ~c"HTTP/1.1"
+
   def get(url, headers \\ []) do
     headers = Enum.map(headers, fn {key, value} -> {to_charlist(key), to_charlist(value)} end)
     http_request_opts = []
@@ -16,7 +18,7 @@ defmodule Switch.Infra.HttpClient do
     case result do
       {:ok, payload} ->
         {
-          {~c"HTTP/1.1", status, _msg},
+          {@http_version, status, _msg},
           headers,
           body
         } = payload

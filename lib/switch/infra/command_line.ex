@@ -16,7 +16,7 @@ defmodule Switch.Infra.CommandLine do
   end
 
   @spec create_null() :: t
-  @spec create_null(Attrs.t) :: t
+  @spec create_null(Attrs.t()) :: t
   def create_null(attrs \\ []) do
     args = Access.get(attrs, :args, [])
     # Embedded Stub
@@ -36,7 +36,7 @@ defmodule Switch.Infra.CommandLine do
     struct(__MODULE__, attrs)
   end
 
-  @spec args(t()) :: list(String.t)
+  @spec args(t()) :: list(String.t())
   def args(command_line) do
     command_line.argv.()
   end

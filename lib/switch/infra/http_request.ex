@@ -37,11 +37,7 @@ defmodule Switch.Infra.HttpRequest do
     entity_body = record |> httpd(:entity_body) |> to_string
     request_uri = record |> httpd(:request_uri) |> to_string
     method = record |> httpd(:method) |> to_string
-
-    headers =
-      record
-      |> httpd(:parsed_header)
-      |> Enum.map(fn {key, value} -> {to_string(key), to_string(value)} end)
+    headers = headers(record)
 
     http_request_attrs = %{
       http_version: "HTTP/1.1",
@@ -55,23 +51,21 @@ defmodule Switch.Infra.HttpRequest do
     struct!(__MODULE__, http_request_attrs)
   end
 
+  defp headers(record) do
+    record
+    |> httpd(:parsed_header)
+    |> Enum.map(fn {key, value} -> {to_string(key), to_string(value)} end)
+  end
+
   @spec to_record(t()) :: tuple()
   def to_record(http_request) do
     data = []
     socket_type = :ip_comm
     socket = nil
     config_db = :httpd_conf_4002default
-    request_line = ~c"#{http_request.method} / #{http_request.http_version}"
+    request_line = request_line(http_request)
     connection = true
-
-    headers =
-      Enum.map(http_request.headers, fn
-        {key, value} when is_binary(key) and is_binary(value) ->
-          {to_charlist(key), to_charlist(value)}
-
-        {key, value} when is_binary(key) ->
-          {to_charlist(key), value}
-      end)
+    headers = record_headers(http_request)
 
     {
       :mod,
@@ -96,5 +90,19 @@ defmodule Switch.Infra.HttpRequest do
     sockname = {4002, ~c"127.0.0.1"}
     resolve = ~c"Auckland"
     {:init_data, peername, sockname, resolve}
+  end
+
+  defp request_line(http_request) do
+    ~c"#{http_request.method} / #{http_request.http_version}"
+  end
+
+  defp record_headers(http_request) do
+    Enum.map(http_request.headers, fn
+      {key, value} when is_binary(key) and is_binary(value) ->
+        {to_charlist(key), to_charlist(value)}
+
+      {key, value} when is_binary(key) ->
+        {to_charlist(key), value}
+    end)
   end
 end
