@@ -1,21 +1,23 @@
-# Rot13
+# Testing Without Mocks
 
-**TODO: Add description**
+Applying https://www.jamesshore.com/v2/projects/nullables to Elixir.
 
-## Installation
+## Development
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `rot13` to your list of dependencies in `mix.exs`:
+    git clone https://github.com/nicholasjhenry/testing-without-mocks-example.git
+    mix test
 
-```elixir
-def deps do
-  [
-    {:rot13, "~> 0.1.0"}
-  ]
-end
-```
+## Running
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/rot13>.
+Command line:
 
+    script/rot13 hello
+    # => uryyb
+
+Server:
+
+    script/server 4001
+    # New terminal
+    brew install httpie
+    http http://localhost:4001 hello=world
+    # => { "uryyb": "jbeyq" }
