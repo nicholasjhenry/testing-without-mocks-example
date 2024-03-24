@@ -1,8 +1,7 @@
 #! /usr/bin/env elixir
 
 Mix.install([
-  {:switch, path: "./"},
-  {:norm, "~> 0.13.0"}
+  {:switch, path: "./"}
 ])
 
 alias Switch.Infra.CommandLine
