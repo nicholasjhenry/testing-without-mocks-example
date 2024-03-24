@@ -1,7 +1,11 @@
 defmodule Switch.Infra.HttpResponse do
-  defstruct [:status, :headers, :body]
+  defstruct [:body, :headers, :status]
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          body: String.t(),
+          headers: list({String.t(), term()}),
+          status: non_neg_integer()
+        }
 
   alias Switch.Attrs
 

@@ -5,9 +5,14 @@ defmodule Switch.Infra.CommandLine do
 
   alias Switch.Attrs
 
-  defstruct [:write, :argv, :last_output, :args]
+  defstruct [:args, :argv, :last_output, :write]
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          args: list(String.t()),
+          argv: (-> list(String.t())),
+          last_output: String.t(),
+          write: (String.t() -> :ok)
+        }
 
   defmodule NullIO do
     def write(_string) do

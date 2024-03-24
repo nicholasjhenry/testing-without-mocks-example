@@ -7,9 +7,16 @@ defmodule Switch.Infra.HttpRequest do
   # https://github.com/erlang/otp/blob/master/lib/inets/include/httpd.hrl
   Record.defrecord(:httpd, Record.extract(:mod, from_lib: "inets/include/httpd.hrl"))
 
-  defstruct [:http_version, :method, :absolute_uri, :request_uri, :headers, :entity_body]
+  defstruct [:absolute_uri, :entity_body, :headers, :http_version, :method, :request_uri]
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          absolute_uri: String.t(),
+          entity_body: String.t(),
+          headers: list({String.t(), term()}),
+          http_version: String.t(),
+          method: String.t(),
+          request_uri: String.t()
+        }
 
   @spec create_null(Attrs.t()) :: t()
   def create_null(attrs \\ %{}) do
@@ -24,7 +31,7 @@ defmodule Switch.Infra.HttpRequest do
         {"te", []},
         {"content-length", "0"}
       ],
-      entity_body: []
+      entity_body: ""
     }
 
     attrs = Enum.into(attrs, default_attrs)

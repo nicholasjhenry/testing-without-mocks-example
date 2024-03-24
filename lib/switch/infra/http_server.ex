@@ -11,7 +11,11 @@ defmodule Switch.Infra.HttpServer do
 
   defstruct [:httpd, :internet_services, :request_handler]
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          httpd: pid(),
+          internet_services: :inets | NullInets,
+          request_handler: module()
+        }
 
   defmodule NullInets do
     def start(:httpd, _port) do

@@ -10,7 +10,10 @@ defmodule Switch.Util.Server do
 
   defstruct [:command_line, :http_server]
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+          command_line: CommandLine.t(),
+          http_server: HttpServer.t()
+        }
 
   @spec create(Attrs.t()) :: t()
   def create(attrs) do
