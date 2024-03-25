@@ -36,6 +36,17 @@ defmodule Switch.Infra.HttpRequest do
 
     attrs = Enum.into(attrs, default_attrs)
 
+    create(attrs)
+  end
+
+  @spec create(Attrs.t()) :: t()
+  def create(attrs \\ %{}) do
+    default_attrs = %{
+      http_version: "HTTP/1.1"
+    }
+
+    attrs = Enum.into(attrs, default_attrs)
+
     struct!(__MODULE__, attrs)
   end
 

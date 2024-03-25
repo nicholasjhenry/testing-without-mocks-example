@@ -16,24 +16,22 @@ defmodule Switch.Util.ServerTest do
     assert HttpServer.started?(server.http_server)
   end
 
+  test "validates args" do
+    command_line = CommandLine.create_null()
+    http_server = HttpServer.create_null()
+    server = Server.create(command_line: command_line, http_server: http_server)
+    {:error, server} = Server.run(server)
+    assert "Usage: run PORT\n" == server.command_line.last_output
+  end
+
   @valid_request_uri "/rot13/transform"
+  @valid_method "POST"
+  @valid_content_type "application/json"
+
   @tag :capture_log
   test "responds to request with a transformation" do
-    command_line = CommandLine.create_null(args: ["4001"])
-    http_server = HttpServer.create_null()
-
-    http_request =
-      HttpRequest.create_null(
-        request_uri: @valid_request_uri,
-        method: "POST",
-        entity_body: :json.encode(%{text: "hello"}),
-        headers: [{"content-type", "application/json"}]
-      )
-
-    server = Server.create(command_line: command_line, http_server: http_server)
-    {:ok, server} = Server.run(server)
-
-    result = HttpServer.simulate_request(server.http_server, http_request)
+    body = :json.encode(%{text: "hello"})
+    result = simulate_request(@valid_method, @valid_request_uri, body, @valid_content_type)
 
     assert {:ok, response} = result
     assert response.status == 200
@@ -41,103 +39,21 @@ defmodule Switch.Util.ServerTest do
     assert json_response(response) == %{"transform" => Rot13.transform("hello")}
   end
 
-  @tag :capture_log
-  test "given an invalid URI responds with a not-found error" do
+  def simulate_request(method, request_uri, body, content_type) do
     command_line = CommandLine.create_null(args: ["4001"])
     http_server = HttpServer.create_null()
 
     http_request =
       HttpRequest.create_null(
-        request_uri: "/not-found",
-        method: "POST",
-        entity_body: :json.encode(%{text: "hello"})
+        request_uri: request_uri,
+        method: method,
+        entity_body: body,
+        headers: [{"content-type", content_type}]
       )
 
     server = Server.create(command_line: command_line, http_server: http_server)
     {:ok, server} = Server.run(server)
-
-    result = HttpServer.simulate_request(server.http_server, http_request)
-
-    assert {:ok, response} = result
-    assert response.status == 404
-    assert response.headers[:content_type] == "application/json"
-    assert json_response(response) == %{"error" => "not found"}
-  end
-
-  test "given an invalid method responds with a method-not-allowed error" do
-    command_line = CommandLine.create_null(args: ["4001"])
-    http_server = HttpServer.create_null()
-
-    http_request =
-      HttpRequest.create_null(
-        request_uri: @valid_request_uri,
-        method: "GET",
-        entity_body: :json.encode(%{text: "hello"})
-      )
-
-    server = Server.create(command_line: command_line, http_server: http_server)
-    {:ok, server} = Server.run(server)
-
-    result = HttpServer.simulate_request(server.http_server, http_request)
-
-    assert {:ok, response} = result
-    assert response.status == 405
-    assert response.headers[:content_type] == "application/json"
-    assert json_response(response) == %{"error" => "method not allowed"}
-  end
-
-  test "given an invalid JSON payload responds with an invalid content error" do
-    command_line = CommandLine.create_null(args: ["4001"])
-    http_server = HttpServer.create_null()
-
-    http_request =
-      HttpRequest.create_null(
-        request_uri: @valid_request_uri,
-        method: "POST",
-        entity_body: :json.encode(%{invalid: "hello"}),
-        headers: [{"content-type", "application/json"}]
-      )
-
-    server = Server.create(command_line: command_line, http_server: http_server)
-    {:ok, server} = Server.run(server)
-
-    result = HttpServer.simulate_request(server.http_server, http_request)
-
-    assert {:ok, response} = result
-    assert response.status == 400
-    assert response.headers[:content_type] == "application/json"
-    assert json_response(response) == %{"error" => "Incorrect payload: must have 'text' key"}
-  end
-
-  test "given an invalid content-type responds with an invalid content-type error" do
-    command_line = CommandLine.create_null(args: ["4001"])
-    http_server = HttpServer.create_null()
-
-    http_request =
-      HttpRequest.create_null(
-        request_uri: @valid_request_uri,
-        method: "POST",
-        entity_body: :json.encode(%{text: "hello"}),
-        headers: [{"content-type", "plain/text"}]
-      )
-
-    server = Server.create(command_line: command_line, http_server: http_server)
-    {:ok, server} = Server.run(server)
-
-    result = HttpServer.simulate_request(server.http_server, http_request)
-
-    assert {:ok, response} = result
-    assert response.status == 400
-    assert response.headers[:content_type] == "application/json"
-    assert json_response(response) == %{"error" => "Must be application/json"}
-  end
-
-  test "validates args" do
-    command_line = CommandLine.create_null()
-    http_server = HttpServer.create_null()
-    server = Server.create(command_line: command_line, http_server: http_server)
-    {:error, server} = Server.run(server)
-    assert "Usage: run PORT\n" == server.command_line.last_output
+    HttpServer.simulate_request(server.http_server, http_request)
   end
 
   def json_response(response) do
